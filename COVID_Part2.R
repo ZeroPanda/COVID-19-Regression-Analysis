@@ -10,7 +10,7 @@ library('corrplot')
 
 # Importing disease.xlsx file
 # Skipping first column as it is just the ID column
-disease <- read_excel("C:/Users/Amit R. Amin/Downloads/COVID-19/disease.xlsx", 
+disease <- read_excel("C:/Users/Shrey/Downloads/COVID-19/disease.xlsx", 
                       col_types = c("skip", "numeric", "numeric", 
                                     "numeric", "numeric", "numeric", 
                                     "numeric", "numeric", "numeric", "numeric", 
@@ -23,7 +23,7 @@ disease <- read_excel("C:/Users/Amit R. Amin/Downloads/COVID-19/disease.xlsx",
 summary(disease)
 
 # Skipping parainfluenza_2 here
-disease <- read_excel("C:/Users/Amit R. Amin/Downloads/COVID-19/disease.xlsx", 
+disease <- read_excel("C:/Users/Shrey/Downloads/COVID-19/disease.xlsx", 
                       col_types = c("skip", "numeric", "numeric", 
                                     "numeric", "numeric", "numeric", 
                                     "numeric", "numeric", "skip", "numeric", 
@@ -100,7 +100,7 @@ plot(disease.ROCRperf, colorize=TRUE, print.cutoffs.at=seq(0,1,by=0.1), text.adj
 
 
 # Importing condition.xlsx file
-condition <- read_excel("C:/Users/Amit R. Amin/Downloads/COVID-19/condition.xlsx", 
+condition <- read_excel("C:/Users/Shrey/Downloads/COVID-19/condition.xlsx", 
                         col_types = c("skip", "numeric", "numeric", 
                                       "numeric", "numeric", "numeric", 
                                       "numeric", "numeric", "numeric", 
