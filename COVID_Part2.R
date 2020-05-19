@@ -78,6 +78,9 @@ disease.function = paste("SARS_COV2_Result", "~", "Patient_Age_Quantile + Rhinov
 disease.glm = glm(as.formula(disease.function), data = disease.train , family = binomial)
 summary(disease.glm)
 
+# 10 fold cross-validation to check the model error
+cv.glm(disease.train,disease.glm,K=10)$delta[1]
+
 # Predicting on test data based on training set
 disease.glm.predict <- predict(disease.glm,disease.test,type = "response")
 summary(disease.glm.predict)
@@ -145,6 +148,8 @@ condition.function = paste("SARS_COV2_Result", "~", ".")
 condition.glm = glm(as.formula(condition.function), data = condition.train , family = binomial)
 summary(condition.glm)
 
+# 10 fold cross-validation to check the model error
+cv.glm(condition.train,condition.glm,K=10)$delta[1]
 
 # after reducing dimensions
 condition.function = paste("SARS_COV2_Result", "~", "Patient_Age_Quantile + Leukocytes + Eosinophils + Red_blood_cell_distribution_width_RDW + Platelets + Proteina_C_reativa_mg_dL")
@@ -183,6 +188,7 @@ plotting.function <- function(var){
   condition.sep.function = paste("SARS_COV2_Result", "~", as.character(var))
   condition.sep.glm = glm(as.formula(condition.function), data = condition.train , family = binomial)
   summary(condition.sep.glm)
+  cv.glm(condition.train,condition.sep.glm,K=10)$delta[1]
   predicted.data <- data.frame(
     probability.of.SARS=condition.glm$fitted.values,
     variable=condition.train[,as.character(var)])
