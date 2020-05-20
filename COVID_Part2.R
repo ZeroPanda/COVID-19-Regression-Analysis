@@ -7,7 +7,8 @@ library('ROCR')
 library('ggplot2')
 library('corrplot')
 library('latticeExtra')
-
+library('boot')
+library('gridExtra')
 
 # Importing disease.xlsx file
 # Skipping first column as it is just the ID column
@@ -89,10 +90,12 @@ summary(disease.glm.predict)
 tapply(disease.glm.predict, disease.test$SARS_COV2_Result, mean)
 
 # Confusion matrix for threshold of 1%
-table(disease.test$SARS_COV2_Result, disease.glm.predict > 0.01)
+disease.confusion = table(disease.test$SARS_COV2_Result, disease.glm.predict > 0.01)
+disease.confusion
 
 # False negative error rate (Type II error)
-36/(36+22)
+disease.type2error = disease.confusion[1,1]/(disease.confusion[1,1]+disease.confusion[2,2])
+disease.type2error
 
 # Plotting ROCR curve
 disease.ROCRpred = prediction(disease.glm.predict, disease.test$SARS_COV2_Result)
@@ -176,16 +179,42 @@ summary(condition.glm.predict)
 tapply(condition.glm.predict, condition.test$SARS_COV2_Result, mean)
 
 # Confusion matrix for threshold of 1%
-table(condition.test$SARS_COV2_Result, condition.glm.predict > 0.01)
+condition.confusion = table(condition.test$SARS_COV2_Result, condition.glm.predict > 0.01)
+condition.confusion
 
 # False negative error rate (Type II error)
-24/(24+19)
-
+condition.type2error = condition.confusion[1,1]/(condition.confusion[1,1]+condition.confusion[2,2])
+condition.type2error
 
 # Plotting ROCR curve
 condition.ROCRpred = prediction(condition.glm.predict, condition.test$SARS_COV2_Result)
 condition.ROCRperf = performance(condition.ROCRpred, "tpr", "fpr")
 plot(condition.ROCRperf, colorize=TRUE, print.cutoffs.at=seq(0,1,by=0.1), text.adj=c(-0.2,1.7))
+
+# Creating a dataframe with variables and predicted values of SARS results
+condition.predict.dataframe <- data.frame(
+  probability.of.having.SARS=condition.glm$fitted.values,
+  Leukocytes=condition.train$Leukocytes,
+  Patient_Age_Quantile = condition.train$Patient_Age_Quantile,
+  Eosinophils = condition.train$Eosinophils,
+  Red_blood_cell_distribution_width_RDW = condition.train$Red_blood_cell_distribution_width_RDW,
+  Platelets = condition.train$Platelets,
+  Proteina_C_reativa_mg_dL = condition.train$Proteina_C_reativa_mg_dL)
+
+plot1 = ggplot(data=condition.predict.dataframe, aes(x=Patient_Age_Quantile, y=probability.of.having.SARS)) +
+  geom_point(aes(color=Patient_Age_Quantile), size=4)
+plot2 = ggplot(data=condition.predict.dataframe, aes(x=Leukocytes, y=probability.of.having.SARS)) +
+  geom_point(aes(color=Leukocytes), size=4)
+plot3 = ggplot(data=condition.predict.dataframe, aes(x=Red_blood_cell_distribution_width_RDW, y=probability.of.having.SARS)) +
+  geom_point(aes(color=Red_blood_cell_distribution_width_RDW), size=4)
+plot4 = ggplot(data=condition.predict.dataframe, aes(x=Eosinophils, y=probability.of.having.SARS)) +
+  geom_point(aes(color=Eosinophils), size=4)
+plot5 = ggplot(data=condition.predict.dataframe, aes(x=Platelets, y=probability.of.having.SARS)) +
+  geom_point(aes(color=Platelets), size=4)
+plot6 = ggplot(data=condition.predict.dataframe, aes(x=Proteina_C_reativa_mg_dL, y=probability.of.having.SARS)) +
+  geom_point(aes(color=Proteina_C_reativa_mg_dL), size=4)
+# Plotting the values
+grid.arrange(plot1, plot2, plot3, plot4, plot5, plot6, ncol=3 , nrow = 2)
 
 
 #Seperate investigation
@@ -197,11 +226,11 @@ plot(condition.ROCRperf, colorize=TRUE, print.cutoffs.at=seq(0,1,by=0.1), text.a
 #Mean_platelet_volume *
 
 
-# Plotting Seperate Probability graphs
-plotting.function <- function(var){
+# Plotting Seperate probability graphs
+plotting.function <- function(var,variableORrank){
   condition.sep.function = paste("SARS_COV2_Result", "~", as.character(var))
-  condition.sep.glm = glm(as.formula(condition.function), data = condition.train , family = binomial)
-  summary(condition.sep.glm)
+  condition.sep.glm = glm(as.formula(condition.sep.function), data = condition.train , family = binomial)
+  print(summary(condition.sep.glm))
   cv.glm(condition.train,condition.sep.glm,K=10)$delta[1]
   
   condition.predicted.data <- data.frame(
@@ -209,18 +238,19 @@ plotting.function <- function(var){
     variable=condition.train[,as.character(var)])
   
   condition.predicted.data <- condition.predicted.data[
-    order(condition.predicted.data$probability.of.SARS, decreasing=FALSE),]
+    order(condition.predicted.data$variable, decreasing=FALSE),]
   
   condition.predicted.data$rank <- 1:nrow(condition.predicted.data)
   
-  ggplot(data=condition.predicted.data, aes(x=rank, y=probability.of.SARS)) +
+  ggplot(data=condition.predicted.data, aes(x= variable, y=probability.of.SARS)) +
     geom_point(aes(color=variable), size=3) +
     xlab(as.character(var)) +
-    ylab("Probability of SARS CoV-2")
+    ylab("Probability of having SARS CoV-2")
 }
 
-plotting.function("Platelets")
-plotting.function("Monocytes")
-plotting.function("Hemoglobin")
-plotting.function("Red_blood_cells")
-plotting.function("Mean_platelet_volume")
+plotfun1 = plotting.function("Platelets")
+plotfun2 = plotting.function("Monocytes")
+plotfun3 = plotting.function("Hemoglobin")
+plotfun4 = plotting.function("Red_blood_cells")
+plotfun5 = plotting.function("Mean_platelet_volume")
+grid.arrange(plotfun1, plotfun2, plotfun3, plotfun4, plotfun5, ncol=3 , nrow = 2)
