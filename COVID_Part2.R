@@ -100,21 +100,18 @@ disease.type2error
 # Plotting ROCR curve
 disease.ROCRpred = prediction(disease.glm.predict, disease.test$SARS_COV2_Result)
 disease.ROCRperf = performance(disease.ROCRpred, "tpr", "fpr")
+par(mfrow=c(1,2))
 plot(disease.ROCRperf, colorize=TRUE, print.cutoffs.at=seq(0,1,by=0.1), text.adj=c(-0.2,1.7))
 
 # Probability of SARS vs Rhinovirus plot
 disease.predicted.data <- data.frame(
-  probability.of.SARS=disease.glm.predict,
-  variable=disease.test$Rhinovirus_OR_Enterovirus)
+  probability.of.having.SARS=disease.glm.predict,
+  Rhinovirus=disease.test$Rhinovirus_OR_Enterovirus)
 disease.predicted.data <- disease.predicted.data[
-  order(disease.predicted.data$probability.of.SARS, decreasing=FALSE),]
+  order(disease.predicted.data$probability.of.having.SARS, decreasing=FALSE),]
 disease.predicted.data$rank <- 1:nrow(disease.predicted.data)
 
-plot1 = dotplot(SARS_COV2_Result ~ Rhinovirus_OR_Enterovirus, disease.test, lwd = 2, ylim = c(0,1.2))
-plot2 = xyplot(probability.of.SARS ~ variable,disease.predicted.data, type = "l", lwd = 2)
-doubleYScale(plot1, plot2 , add.ylab2 = TRUE)
-
-
+plot(probability.of.having.SARS ~ Rhinovirus,disease.predicted.data, type = "l", lwd = 2)
 
 
 
@@ -142,7 +139,7 @@ names(condition)[18] <- "Proteina_C_reativa_mg_dL"
 # Summarizing disease dataset
 summary(condition)
 
-# attaching the final dataset for ease of use
+# attaching the final dataset
 attach(condition)
 
 # Correlation between varables
@@ -245,7 +242,9 @@ plotting.function <- function(var,variableORrank){
   ggplot(data=condition.predicted.data, aes(x= variable, y=probability.of.SARS)) +
     geom_point(aes(color=variable), size=3) +
     xlab(as.character(var)) +
-    ylab("Probability of having SARS CoV-2")
+    ylab("Probability of having SARS CoV-2") +
+    scale_colour_gradient(low = "darkgreen", high = "darkred", na.value = NA) +
+    ggtitle(coef(summary(condition.sep.glm))[,'Pr(>|z|)'])
 }
 
 plotfun1 = plotting.function("Platelets")
