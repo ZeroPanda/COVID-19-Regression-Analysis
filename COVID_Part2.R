@@ -6,6 +6,7 @@ library('MASS')
 library('ROCR')
 library('ggplot2')
 library('corrplot')
+library('latticeExtra')
 
 
 # Importing disease.xlsx file
@@ -78,7 +79,7 @@ disease.function = paste("SARS_COV2_Result", "~", "Patient_Age_Quantile + Rhinov
 disease.glm = glm(as.formula(disease.function), data = disease.train , family = binomial)
 summary(disease.glm)
 
-# 10 fold cross-validation to check the model error
+# 10 fold cross-validation to verify the model
 cv.glm(disease.train,disease.glm,K=10)$delta[1]
 
 # Predicting on test data based on training set
@@ -97,6 +98,18 @@ table(disease.test$SARS_COV2_Result, disease.glm.predict > 0.01)
 disease.ROCRpred = prediction(disease.glm.predict, disease.test$SARS_COV2_Result)
 disease.ROCRperf = performance(disease.ROCRpred, "tpr", "fpr")
 plot(disease.ROCRperf, colorize=TRUE, print.cutoffs.at=seq(0,1,by=0.1), text.adj=c(-0.2,1.7))
+
+# Probability of SARS vs Rhinovirus plot
+disease.predicted.data <- data.frame(
+  probability.of.SARS=disease.glm.predict,
+  variable=disease.test$Rhinovirus_OR_Enterovirus)
+disease.predicted.data <- disease.predicted.data[
+  order(disease.predicted.data$probability.of.SARS, decreasing=FALSE),]
+disease.predicted.data$rank <- 1:nrow(disease.predicted.data)
+
+plot1 = dotplot(SARS_COV2_Result ~ Rhinovirus_OR_Enterovirus, disease.test, lwd = 2, ylim = c(0,1.2))
+plot2 = xyplot(probability.of.SARS ~ variable,disease.predicted.data, type = "l", lwd = 2)
+doubleYScale(plot1, plot2 , add.ylab2 = TRUE)
 
 
 
@@ -148,13 +161,14 @@ condition.function = paste("SARS_COV2_Result", "~", ".")
 condition.glm = glm(as.formula(condition.function), data = condition.train , family = binomial)
 summary(condition.glm)
 
-# 10 fold cross-validation to check the model error
-cv.glm(condition.train,condition.glm,K=10)$delta[1]
 
 # after reducing dimensions
 condition.function = paste("SARS_COV2_Result", "~", "Patient_Age_Quantile + Leukocytes + Eosinophils + Red_blood_cell_distribution_width_RDW + Platelets + Proteina_C_reativa_mg_dL")
 condition.glm = glm(as.formula(condition.function), data = condition.train , family = binomial)
 summary(condition.glm)
+
+# 10 fold cross-validation to verify the model
+cv.glm(condition.train,condition.glm,K=10)$delta[1]
 
 # Predicting on test data based on training set
 condition.glm.predict <- predict(condition.glm,condition.test,type = "response")
@@ -189,13 +203,17 @@ plotting.function <- function(var){
   condition.sep.glm = glm(as.formula(condition.function), data = condition.train , family = binomial)
   summary(condition.sep.glm)
   cv.glm(condition.train,condition.sep.glm,K=10)$delta[1]
-  predicted.data <- data.frame(
+  
+  condition.predicted.data <- data.frame(
     probability.of.SARS=condition.glm$fitted.values,
     variable=condition.train[,as.character(var)])
-  predicted.data <- predicted.data[
-    order(predicted.data$probability.of.SARS, decreasing=FALSE),]
-  predicted.data$rank <- 1:nrow(predicted.data)
-  ggplot(data=predicted.data, aes(x=rank, y=probability.of.SARS)) +
+  
+  condition.predicted.data <- condition.predicted.data[
+    order(condition.predicted.data$probability.of.SARS, decreasing=FALSE),]
+  
+  condition.predicted.data$rank <- 1:nrow(condition.predicted.data)
+  
+  ggplot(data=condition.predicted.data, aes(x=rank, y=probability.of.SARS)) +
     geom_point(aes(color=variable), size=3) +
     xlab(as.character(var)) +
     ylab("Probability of SARS CoV-2")
