@@ -197,7 +197,7 @@ plot(condition.ROCRperf, colorize=TRUE, print.cutoffs.at=seq(0,1,by=0.1), text.a
 #Mean_platelet_volume *
 
 
-# Plotting Seperate sigmoids
+# Plotting Seperate Probability graphs
 plotting.function <- function(var){
   condition.sep.function = paste("SARS_COV2_Result", "~", as.character(var))
   condition.sep.glm = glm(as.formula(condition.function), data = condition.train , family = binomial)
@@ -205,7 +205,7 @@ plotting.function <- function(var){
   cv.glm(condition.train,condition.sep.glm,K=10)$delta[1]
   
   condition.predicted.data <- data.frame(
-    probability.of.SARS=condition.glm$fitted.values,
+    probability.of.SARS=condition.sep.glm$fitted.values,
     variable=condition.train[,as.character(var)])
   
   condition.predicted.data <- condition.predicted.data[
