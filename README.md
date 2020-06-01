@@ -1,3 +1,3 @@
 # COVID-19-Regression-Analysis
 This Repo involves the code behind regression analysis.
-![Demo GIF](https://github.com/ZeroPanda/Service-Troubleshooting-Diagram/blob/master/Demo.gif?raw=true)
+!https://github.com/ZeroPanda/COVID-19-Regression-Analysis/blob/master/Covid_markdown.html
