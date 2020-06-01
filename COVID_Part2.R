@@ -12,7 +12,7 @@ library('gridExtra')
 
 # Importing disease.xlsx file
 # Skipping first column as it is just the ID column
-disease <- read_excel("C:/Users/Amit R. Amin/Downloads/COVID-19/disease.xlsx", 
+disease <- read_excel("C:/Users/Shrey/Downloads/COVID-19/disease.xlsx", 
                       col_types = c("skip", "numeric", "numeric", 
                                     "numeric", "numeric", "numeric", 
                                     "numeric", "numeric", "numeric", "numeric", 
@@ -25,7 +25,7 @@ disease <- read_excel("C:/Users/Amit R. Amin/Downloads/COVID-19/disease.xlsx",
 summary(disease)
 
 # Skipping parainfluenza_2 here
-disease <- read_excel("C:/Users/Amit R. Amin/Downloads/COVID-19/disease.xlsx", 
+disease <- read_excel("C:/Users/Shrey/Downloads/COVID-19/disease.xlsx", 
                       col_types = c("skip", "numeric", "numeric", 
                                     "numeric", "numeric", "numeric", 
                                     "numeric", "numeric", "skip", "numeric", 
@@ -118,7 +118,7 @@ plot(probability.of.having.SARS ~ Rhinovirus,disease.predicted.data, type = "l",
 
 
 # Importing condition.xlsx file
-condition <- read_excel("C:/Users/Amit R. Amin/Downloads/COVID-19/condition.xlsx", 
+condition <- read_excel("C:/Users/Shrey/Downloads/COVID-19/condition.xlsx", 
                         col_types = c("skip", "numeric", "numeric", 
                                       "numeric", "numeric", "numeric", 
                                       "numeric", "numeric", "numeric", 
@@ -206,27 +206,27 @@ condition.predict.dataframe <- data.frame(
 plot1 = ggplot(data=condition.predict.dataframe, aes(x=Patient_Age_Quantile, y=probability.of.having.SARS)) +
   geom_point(aes(color=Patient_Age_Quantile), size=3)+
   geom_smooth(se = T , lwd=1.5 , col= "red", method = 'loess')+
-  ylim(NA,1)
+  ylim(NA,1)+ scale_color_gradient(guide = 'none')
 plot2 = ggplot(data=condition.predict.dataframe, aes(x=Leukocytes, y=probability.of.having.SARS)) +
   geom_point(aes(color=Leukocytes), size=3)+
   geom_smooth(se = T , lwd=1.5 , col= "red", method = 'loess')+
-  ylim(NA,1)
+  ylim(NA,1)+ scale_color_gradient(guide = 'none')
 plot3 = ggplot(data=condition.predict.dataframe, aes(x=Red_blood_cell_distribution_width_RDW, y=probability.of.having.SARS)) +
   geom_point(aes(color=Red_blood_cell_distribution_width_RDW), size=3)+
   geom_smooth(se = T , lwd=1.5 , col= "red", method = 'loess')+
-  ylim(NA,1)
+  ylim(NA,1)+ scale_color_gradient(guide = 'none')
 plot4 = ggplot(data=condition.predict.dataframe, aes(x=Eosinophils, y=probability.of.having.SARS)) +
   geom_point(aes(color=Eosinophils), size=3)+
   geom_smooth(se = T , lwd=1.5 , col= "red", method = 'loess')+
-  ylim(NA,1)
+  ylim(NA,1)+ scale_color_gradient(guide = 'none')
 plot5 = ggplot(data=condition.predict.dataframe, aes(x=Platelets, y=probability.of.having.SARS)) +
   geom_point(aes(color=Platelets), size=3)+
   geom_smooth(se = T , lwd=1.5 , col= "red", method = 'loess')+
-  ylim(NA,1)
+  ylim(NA,1)+ scale_color_gradient(guide = 'none')
 plot6 = ggplot(data=condition.predict.dataframe, aes(x=Proteina_C_reativa_mg_dL, y=probability.of.having.SARS)) +
   geom_point(aes(color=Proteina_C_reativa_mg_dL), size=3)+
   geom_smooth(se = T , lwd=1.5 , col= "red", method = 'loess')+
-  ylim(NA,1)
+  ylim(NA,1)+ scale_color_gradient(guide = 'none')
 # Plotting the values
 grid.arrange(plot1, plot2, plot3, plot4, plot5, plot6, ncol=3 , nrow = 2)
 
@@ -354,7 +354,7 @@ grid.arrange(plotfun1, plotfun2, plotfun3, plotfun4, plotfun5,plotfun2.1, plotfu
 
 
 
-#Shrinkage with LASSO (still working)
+#Shrinkage with LASSO
 
 library(glmnet)
 x=model.matrix(SARS_COV2_Result~.-1,data=condition.train) 
