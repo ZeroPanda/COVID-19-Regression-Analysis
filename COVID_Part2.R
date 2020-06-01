@@ -12,7 +12,7 @@ library('gridExtra')
 
 # Importing disease.xlsx file
 # Skipping first column as it is just the ID column
-disease <- read_excel("C:/Users/Shrey/Downloads/COVID-19/disease.xlsx", 
+disease <- read_excel("C:/Users/Amit R. Amin/Downloads/COVID-19/disease.xlsx", 
                       col_types = c("skip", "numeric", "numeric", 
                                     "numeric", "numeric", "numeric", 
                                     "numeric", "numeric", "numeric", "numeric", 
@@ -25,7 +25,7 @@ disease <- read_excel("C:/Users/Shrey/Downloads/COVID-19/disease.xlsx",
 summary(disease)
 
 # Skipping parainfluenza_2 here
-disease <- read_excel("C:/Users/Shrey/Downloads/COVID-19/disease.xlsx", 
+disease <- read_excel("C:/Users/Amit R. Amin/Downloads/COVID-19/disease.xlsx", 
                       col_types = c("skip", "numeric", "numeric", 
                                     "numeric", "numeric", "numeric", 
                                     "numeric", "numeric", "skip", "numeric", 
@@ -58,6 +58,7 @@ disease.corr = PairApply(disease[,names(disease) != "Patient_Age_Quantile"],cram
 # Displaying correlation with variable SARS_COV2_Result
 disease.corr[,2]
 # Correlation plot
+par(mfrow=c(1,1))
 corrplot(disease.corr, method = "square", type = "lower")
 
 
@@ -81,7 +82,8 @@ disease.glm = glm(as.formula(disease.function), data = disease.train , family = 
 summary(disease.glm)
 
 # 10 fold cross-validation to verify the model
-cv.glm(disease.train,disease.glm,K=10)$delta[1]
+disease.cv.glm = cv.glm(disease.train,disease.glm,K=10)
+plot(disease.cv.glm)
 
 # Predicting on test data based on training set
 disease.glm.predict <- predict(disease.glm,disease.test,type = "response")
@@ -116,7 +118,7 @@ plot(probability.of.having.SARS ~ Rhinovirus,disease.predicted.data, type = "l",
 
 
 # Importing condition.xlsx file
-condition <- read_excel("C:/Users/Shrey/Downloads/COVID-19/condition.xlsx", 
+condition <- read_excel("C:/Users/Amit R. Amin/Downloads/COVID-19/condition.xlsx", 
                         col_types = c("skip", "numeric", "numeric", 
                                       "numeric", "numeric", "numeric", 
                                       "numeric", "numeric", "numeric", 
@@ -146,6 +148,7 @@ attach(condition)
 condition.corr = cor(condition)
 condition.corr[,2]
 # Correlation plot
+par(mfrow=c(1,1))
 corrplot(condition.corr, method = "square", type = "lower")
 
 
@@ -189,8 +192,9 @@ condition.ROCRperf = performance(condition.ROCRpred, "tpr", "fpr")
 plot(condition.ROCRperf, colorize=TRUE, print.cutoffs.at=seq(0,1,by=0.1), text.adj=c(-0.2,1.7))
 
 # Creating a dataframe with variables and predicted values of SARS results
+
 condition.predict.dataframe <- data.frame(
-  probability.of.having.SARS=condition.glm$fitted.values,
+  probability.of.having.SARS=exp(condition.glm$fitted.values)/(1 + exp(condition.glm$fitted.values)),
   Leukocytes=condition.train$Leukocytes,
   Patient_Age_Quantile = condition.train$Patient_Age_Quantile,
   Eosinophils = condition.train$Eosinophils,
@@ -198,21 +202,33 @@ condition.predict.dataframe <- data.frame(
   Platelets = condition.train$Platelets,
   Proteina_C_reativa_mg_dL = condition.train$Proteina_C_reativa_mg_dL)
 
+
 plot1 = ggplot(data=condition.predict.dataframe, aes(x=Patient_Age_Quantile, y=probability.of.having.SARS)) +
-  geom_point(aes(color=Patient_Age_Quantile), size=4)
+  geom_point(aes(color=Patient_Age_Quantile), size=3)+
+  geom_smooth(se = T , lwd=1.5 , col= "red", method = 'loess')+
+  ylim(NA,1)
 plot2 = ggplot(data=condition.predict.dataframe, aes(x=Leukocytes, y=probability.of.having.SARS)) +
-  geom_point(aes(color=Leukocytes), size=4)
+  geom_point(aes(color=Leukocytes), size=3)+
+  geom_smooth(se = T , lwd=1.5 , col= "red", method = 'loess')+
+  ylim(NA,1)
 plot3 = ggplot(data=condition.predict.dataframe, aes(x=Red_blood_cell_distribution_width_RDW, y=probability.of.having.SARS)) +
-  geom_point(aes(color=Red_blood_cell_distribution_width_RDW), size=4)
+  geom_point(aes(color=Red_blood_cell_distribution_width_RDW), size=3)+
+  geom_smooth(se = T , lwd=1.5 , col= "red", method = 'loess')+
+  ylim(NA,1)
 plot4 = ggplot(data=condition.predict.dataframe, aes(x=Eosinophils, y=probability.of.having.SARS)) +
-  geom_point(aes(color=Eosinophils), size=4)
+  geom_point(aes(color=Eosinophils), size=3)+
+  geom_smooth(se = T , lwd=1.5 , col= "red", method = 'loess')+
+  ylim(NA,1)
 plot5 = ggplot(data=condition.predict.dataframe, aes(x=Platelets, y=probability.of.having.SARS)) +
-  geom_point(aes(color=Platelets), size=4)
+  geom_point(aes(color=Platelets), size=3)+
+  geom_smooth(se = T , lwd=1.5 , col= "red", method = 'loess')+
+  ylim(NA,1)
 plot6 = ggplot(data=condition.predict.dataframe, aes(x=Proteina_C_reativa_mg_dL, y=probability.of.having.SARS)) +
-  geom_point(aes(color=Proteina_C_reativa_mg_dL), size=4)
+  geom_point(aes(color=Proteina_C_reativa_mg_dL), size=3)+
+  geom_smooth(se = T , lwd=1.5 , col= "red", method = 'loess')+
+  ylim(NA,1)
 # Plotting the values
 grid.arrange(plot1, plot2, plot3, plot4, plot5, plot6, ncol=3 , nrow = 2)
-
 
 #Seperate investigation
 
@@ -223,8 +239,9 @@ grid.arrange(plot1, plot2, plot3, plot4, plot5, plot6, ncol=3 , nrow = 2)
 #Mean_platelet_volume *
 
 
-# Plotting Seperate probability graphs
-plotting.function <- function(var,variableORrank){
+# Plotting Seperate probability graphs glm
+par(mfrow=c(1,1))
+plotting.function <- function(var){
   condition.sep.function = paste("SARS_COV2_Result", "~", as.character(var))
   condition.sep.glm = glm(as.formula(condition.sep.function), data = condition.train , family = binomial)
   print(summary(condition.sep.glm))
@@ -243,8 +260,12 @@ plotting.function <- function(var,variableORrank){
     geom_point(aes(color=variable), size=3) +
     xlab(as.character(var)) +
     ylab("Probability of having SARS CoV-2") +
-    scale_colour_gradient(low = "darkgreen", high = "darkred", na.value = NA) +
-    ggtitle(coef(summary(condition.sep.glm))[,'Pr(>|z|)'])
+    scale_colour_gradient(low = "darkgreen", high = "darkred", na.value = NA, guide = F) +
+    # ggtitle(coef(summary(condition.sep.glm))[,'Pr(>|z|)']) 
+    # ggtitle('Linear fit (Train data)',paste('beta1 Resid. dev.',anova(condition.sep.glm)['Resid. Dev'][2,1]))+
+    ggtitle('Linear fit (Train data)')+
+    ylim(0,1)
+    
 }
 
 plotfun1 = plotting.function("Platelets")
@@ -252,4 +273,109 @@ plotfun2 = plotting.function("Monocytes")
 plotfun3 = plotting.function("Hemoglobin")
 plotfun4 = plotting.function("Red_blood_cells")
 plotfun5 = plotting.function("Mean_platelet_volume")
-grid.arrange(plotfun1, plotfun2, plotfun3, plotfun4, plotfun5, ncol=3 , nrow = 2)
+
+
+# GAM using natural spline instead of glm
+plotting.function2= function(var){ 
+  require(gam)
+  variable = as.character(var)
+  condition.sep.function = paste("SARS_COV2_Result ~ ns(", as.character(var),")")
+  condition.sep.gam = gam(as.formula(condition.sep.function), data = condition.train , family = binomial)
+  print(summary(condition.sep.gam))
+  
+  preds = predict(condition.sep.gam, newdata = condition.test, se = T)
+  se.bands = preds$fit + cbind(fit = 0, lower = -2 * preds$se, upper = 2 * preds$se)
+  prob.bands = exp(se.bands)/(1 + exp(se.bands))
+  
+  
+  condition.predicted.data <- data.frame(
+    condition.test[,as.character(var)], prob.bands)
+  
+  condition.predicted.data <- condition.predicted.data[
+    order(condition.predicted.data[,1], decreasing=FALSE),]
+  
+  attach(condition.predicted.data)
+    ggplot() + 
+    geom_line(data = condition.predicted.data, aes(x = condition.predicted.data[,1], y = condition.predicted.data[,2]), lwd = 1.2, color = "navyblue") +
+    geom_line(data = condition.predicted.data, aes(x = condition.predicted.data[,1], y = condition.predicted.data[,3]),lwd = 1.2, color = "red4", linetype ="dashed") +
+    geom_line(data = condition.predicted.data, aes(x = condition.predicted.data[,1], y = condition.predicted.data[,4]),lwd = 1.2, color = "red4", linetype ="dashed") +
+    geom_point(data = condition.predicted.data, aes(x = condition.predicted.data[,1], y = condition.test$SARS_COV2_Result), color = "purple4") +
+    xlab(as.character(var)) +
+    ylab('Probability of having SARS CoV-2')+
+    ggtitle('Spline fit')
+    # ggtitle('Spline fit',paste('beta1 Resid. Dev.',anova(condition.sep.gam)['Resid. Dev'][2,1]))
+}
+
+plotfun2.1 = plotting.function2("Platelets")
+plotfun2.2 = plotting.function2("Monocytes")
+plotfun2.3 = plotting.function2("Hemoglobin")
+plotfun2.4 = plotting.function2("Red_blood_cells")
+plotfun2.5 = plotting.function2("Mean_platelet_volume")
+
+
+# Poly with degree glm
+plotting.function3= function(var,deg){ 
+  require(ISLR)
+  variable = as.character(var)
+  condition.sep.function = paste("SARS_COV2_Result ~ poly(", as.character(var),",degree=",as.character(deg),")")
+  condition.sep.gam = glm(as.formula(condition.sep.function), data = condition.train , family = binomial)
+  print(summary(condition.sep.gam))
+  
+  preds = predict(condition.sep.gam, newdata = condition.test, se = T)
+  se.bands = preds$fit + cbind(fit = 0, lower = -2 * preds$se, upper = 2 * preds$se)
+  prob.bands = exp(se.bands)/(1 + exp(se.bands))
+  
+  
+  condition.predicted.data <- data.frame(
+    condition.test[,as.character(var)], prob.bands)
+  
+  condition.predicted.data <- condition.predicted.data[
+    order(condition.predicted.data[,1], decreasing=FALSE),]
+  
+  attach(condition.predicted.data)
+  ggplot() + 
+    geom_line(data = condition.predicted.data, aes(x = condition.predicted.data[,1], y = condition.predicted.data[,2]), lwd = 1.2, color = "orange") +
+    geom_line(data = condition.predicted.data, aes(x = condition.predicted.data[,1], y = condition.predicted.data[,3]),lwd = 1.2, color = "darkgreen", linetype ="dashed") +
+    geom_line(data = condition.predicted.data, aes(x = condition.predicted.data[,1], y = condition.predicted.data[,4]),lwd = 1.2, color = "darkgreen", linetype ="dashed") +
+    geom_point(data = condition.predicted.data, aes(x = condition.predicted.data[,1], y = condition.test$SARS_COV2_Result), color = "darkblue") +
+    xlab(as.character(var)) +
+    ylab('Probability of having SARS CoV-2')+
+    #ggtitle('Poly fit with degree 4',paste('beta1 Resid. Dev.',anova(condition.sep.gam)['Resid. Dev'][2,1]))
+    ggtitle('Poly fit with degree 4')
+}
+
+plotfun3.1 = plotting.function3("Platelets",4)
+plotfun3.2 = plotting.function3("Monocytes",4)
+plotfun3.3 = plotting.function3("Hemoglobin",4)
+plotfun3.4 = plotting.function3("Red_blood_cells",4)
+plotfun3.5 = plotting.function3("Mean_platelet_volume",4)
+
+grid.arrange(plotfun1, plotfun2, plotfun3, plotfun4, plotfun5,plotfun2.1, plotfun2.2, plotfun2.3, plotfun2.4, plotfun2.5,plotfun3.1, plotfun3.2, plotfun3.3, plotfun3.4, plotfun3.5, ncol=5 , nrow = 3)
+
+
+
+#Shrinkage with LASSO (still working)
+
+library(glmnet)
+x=model.matrix(SARS_COV2_Result~.-1,data=condition.train) 
+y=condition.train$SARS_COV2_Result
+par(mfrow=c(1,3))
+fit.lasso=glmnet(x,y)
+plot(fit.lasso,xvar="lambda",label=TRUE)
+cv.lasso=cv.glmnet(x,y)
+plot(cv.lasso)
+coef(cv.lasso)
+
+dim(disease.train)
+set.seed(1)
+train=sample(seq(nrow(condition.train)),nrow(condition.train) * 0.8,replace=FALSE)
+
+lasso.tr=glmnet(x[train,],y[train])
+lasso.tr
+pred=predict(lasso.tr,x[-train,])
+dim(pred)
+rmse= sqrt(apply((y[-train]-pred)^2,2,mean))
+plot(log(lasso.tr$lambda),rmse,type="b",xlab="Log(lambda)")
+lam.best=lasso.tr$lambda[order(rmse)[1]]
+lam.best
+coef(lasso.tr,s=lam.best)
